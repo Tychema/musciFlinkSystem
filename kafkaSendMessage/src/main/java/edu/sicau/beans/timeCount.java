@@ -1,30 +1,30 @@
 package edu.sicau.beans;
 
 public class timeCount {
-    private Long userId;
-    private Long count;
+    private Integer userId;
+    private Integer  count;
 
     public timeCount() {
     }
 
-    public timeCount(Long userId, Long count) {
+    public timeCount(Integer  userId, Integer  count) {
         this.userId = userId;
         this.count = count;
     }
 
-    public Long getUserId() {
+    public Integer  getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer  userId) {
         this.userId = userId;
     }
 
-    public Long getCount() {
+    public Integer  getCount() {
         return count;
     }
 
-    public void setCount(Long count) {
+    public void setCount(Integer  count) {
         this.count = count;
     }
 

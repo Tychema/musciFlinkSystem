@@ -17,15 +17,16 @@ public class RollingAggregation {
         DataStreamSource<String> inputStream = env.readTextFile("D:\\1论文\\爬虫\\data\\mork\\morkLogs2\\test2.txt");
 
         //包装类
-        DataStream<UserBehavior> dataStream=inputStream.map(new MapFunction<String, UserBehavior>() {
+        DataStream<timeCount> dataStream=inputStream.map(new MapFunction<String, timeCount>() {
             @Override
-            public UserBehavior map(String s) throws Exception {
+            public timeCount map(String s) throws Exception {
                 String[] s1 = s.split(" ");
-                return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
+                return new timeCount(Integer.valueOf(s1[0]),Integer.valueOf(s1[2])-Integer.valueOf(s1[1]));
+                //return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
             }
         });
         //分组 可以多个字段做一个组合 所以返回为Tuple元组类型
-        KeyedStream<UserBehavior, Tuple> keyedStream = dataStream.keyBy("userId");
+        KeyedStream<timeCount, Tuple> keyedStream = dataStream.keyBy("userId");
         //自定义
         //1、方法引用
         //KeyedStream<UserBehavior, String > keyedStream = dataStream.keyBy(UserBehavior::getUserId);
@@ -37,10 +38,10 @@ public class RollingAggregation {
 //            }
 //        });
         //聚合
-        DataStream<UserBehavior> dt = keyedStream.reduce(new ReduceFunction<UserBehavior>() {
+        DataStream<timeCount> dt = keyedStream.reduce(new ReduceFunction<timeCount>() {
             @Override
-            public UserBehavior reduce(UserBehavior u1, UserBehavior u2) throws Exception {
-                return new UserBehavior(u1.getUserId(), u1.getPlayStartTime(), u2.getPlayEndTime(), u2.getPlayEndTime()- u1.getPlayStartTime(),u1.getSongId(), u1.getSongName(),u1.getArtistId(), u1.getArtistName(),u1.getAlbumId(),u1.getAlbumName());
+            public timeCount reduce(timeCount  u1, timeCount u2) throws Exception {
+                return new timeCount(u1.getUserId(), u1.getCount()+u2.getCount());
             }
         });
         dt.print();
