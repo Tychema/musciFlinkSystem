@@ -12,6 +12,9 @@ import org.apache.flink.util.Collector;
 
 import java.util.Properties;
 
+/**
+ * 测试map，flatmap和filter
+ */
 public class transformTest {
     public static void main(String[] args) throws Exception {
         //1、创建流处理执行环境
