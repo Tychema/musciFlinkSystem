@@ -8,6 +8,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.KeyedStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 
+//听歌总时间
 public class timeCountConsumer {
     public void timeCount(StreamExecutionEnvironment env,DataStream inputStream) throws Exception {
         DataStream<timeCount> dataStream=inputStream.map(new MapFunction<String, timeCount>() {
