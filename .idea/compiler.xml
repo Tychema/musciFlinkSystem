@@ -8,6 +8,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="kafkaSendMessage" />
         <module name="ListenTimeAnalysis" />
+        <module name="MysicHdfsAPI" />
       </profile>
     </annotationProcessing>
   </component>
