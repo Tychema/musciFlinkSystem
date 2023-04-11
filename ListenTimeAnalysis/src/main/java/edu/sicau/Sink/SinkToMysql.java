@@ -76,14 +76,14 @@ public class SinkToMysql {
     }
 
 
-    //三小时热度排行
-    public void threesinkSongsHotRankToMysql(DataStream<songsHotRank> dataStream){
-        dataStream.addSink(JdbcSink.sink("REPLACE INTO threeSongsHotRank VALUES(?,?,?,?,?,?,?);",
+    //歌曲热度排行写入
+    public void sinkSongsHotRankToMysql(DataStream<songsHotRank> dataStream,String tableName){
+        dataStream.addSink(JdbcSink.sink("REPLACE INTO "+tableName+"(songId,songsCount,playStartTime,timeCount,songName,artistId,artistName) VALUES(?,?,?,?,?,?,?);",
                 ((preparedStatement, e1) -> {
                     preparedStatement.setInt(1,e1.getSongId());
                     preparedStatement.setInt(2,e1.getSongsCount());
-                    preparedStatement.setInt(3,e1.getTimeCount());
-                    preparedStatement.setInt(4,e1.getPlayStartTime());
+                    preparedStatement.setInt(3,e1.getPlayStartTime());
+                    preparedStatement.setInt(4,e1.getSongsCount());
                     preparedStatement.setString(5,e1.getSongName());
                     preparedStatement.setInt(6,e1.getArtistId());
                     preparedStatement.setString(7,e1.getArtistName());
@@ -91,37 +91,6 @@ public class SinkToMysql {
                 new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
-    //六小时热度排行
-    public void sixsinkSongsHotRankToMysql(DataStream<songsHotRank> dataStream){
-        dataStream.addSink(JdbcSink.sink("REPLACE INTO sixSongsHotRank VALUES(?,?,?,?,?,?,?);",
-                ((preparedStatement, e1) -> {
-                    preparedStatement.setInt(1,e1.getSongId());
-                    preparedStatement.setInt(2,e1.getSongsCount());
-                    preparedStatement.setInt(3,e1.getTimeCount());
-                    preparedStatement.setInt(4,e1.getPlayStartTime());
-                    preparedStatement.setString(5,e1.getSongName());
-                    preparedStatement.setInt(6,e1.getArtistId());
-                    preparedStatement.setString(7,e1.getArtistName());
-                }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
-        ));
-    }
-    //十二小时热度排行
-    public void twelvesinkSongsHotRankToMysql(DataStream<songsHotRank> dataStream){
-        dataStream.addSink(JdbcSink.sink("REPLACE INTO twelveSongsHotRank VALUES(?,?,?,?,?,?,?);",
-                ((preparedStatement, e1) -> {
-                    preparedStatement.setInt(1,e1.getSongId());
-                    preparedStatement.setInt(2,e1.getSongsCount());
-                    preparedStatement.setInt(3,e1.getTimeCount());
-                    preparedStatement.setInt(4,e1.getPlayStartTime());
-                    preparedStatement.setString(5,e1.getSongName());
-                    preparedStatement.setInt(6,e1.getArtistId());
-                    preparedStatement.setString(7,e1.getArtistName());
-                }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
-        ));
-    }
-
     //每个用户每一首歌听了几次听了多久
     public void userEverySongsTimeAndTimesToMysql(DataStream<userEverySongsTimeAndTimes> dataStream){
         dataStream.addSink(JdbcSink.sink("REPLACE INTO userEverySongsTimeAndTimes(userId,songId,songsCount,timeCount,songName,artistId,artistName,albumId,albumName) VALUES(?,?,?,?,?,?,?,?,?);",

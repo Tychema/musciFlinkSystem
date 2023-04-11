@@ -14,6 +14,7 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
 
@@ -27,25 +28,26 @@ public class userSongsRankWindow {
                     public userEverySongsTimeAndTimes map(UserBehavior u1) throws Exception {
                         return new userEverySongsTimeAndTimes(u1.getUserId(),u1.getSongId(), 1, u1.getPlayStartTime(), u1.getPlayEndTime() - u1.getPlayStartTime(),  u1.getSongName(), u1.getArtistId(), u1.getArtistName(),u1.getAlbumId(),u1.getAlbumName());
                     }
-                })
+                });
                 //水位线 乱序流
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<userEverySongsTimeAndTimes>forBoundedOutOfOrderness(Duration.ofMinutes(1))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<userEverySongsTimeAndTimes>() {
-                            @Override
-                            public long extractTimestamp(userEverySongsTimeAndTimes s1, long l) {
-                                return s1.getPlayStartTime();
-                            }
-                        }));
+//                .assignTimestampsAndWatermarks(WatermarkStrategy.<userEverySongsTimeAndTimes>forBoundedOutOfOrderness(Duration.ofSeconds(1))
+//                        .withTimestampAssigner(new SerializableTimestampAssigner<userEverySongsTimeAndTimes>() {
+//                            @Override
+//                            public long extractTimestamp(userEverySongsTimeAndTimes s1, long l) {
+//                                return ((long)s1.getPlayStartTime())*1000;
+//                            }
+//                        }));
+        //dataStreamWithWaterMark.print();
         //滚动时间窗口
-        DataStream<userEverySongsTimeAndTimes> userWindow = dataStreamWithWaterMark.keyBy(new KeySelector<userEverySongsTimeAndTimes, Tuple2<Integer, Integer>>() {
+        DataStream<userEverySongsTimeAndTimes> userWindow = dataStreamWithWaterMark.keyBy(new KeySelector<userEverySongsTimeAndTimes, Tuple2<Integer,Integer>>() {
                     @Override
-                    public Tuple2<Integer, Integer> getKey(userEverySongsTimeAndTimes u1) throws Exception {
-                        return new Tuple2<Integer, Integer>(u1.getUserId(), u1.getSongId());
+                    public Tuple2<Integer,Integer> getKey(userEverySongsTimeAndTimes u1) throws Exception {
+                        return new Tuple2<Integer,Integer>(u1.getUserId(),u1.getSongId());
                     }
                 })
                 //dataStreamWithWaterMark.keyBy("userId","songId")
                 //一年的数据
-                .window(TumblingEventTimeWindows.of(Time.days(365)))
+                .window(TumblingEventTimeWindows.of(Time.days(2)))
                 .reduce(new ReduceFunction<userEverySongsTimeAndTimes>() {
                     @Override
                     public userEverySongsTimeAndTimes reduce(userEverySongsTimeAndTimes e1, userEverySongsTimeAndTimes e2) throws Exception {
@@ -54,6 +56,7 @@ public class userSongsRankWindow {
                         return e1;
                     }
                 });
+        //userWindow.print();
         return userWindow;
     }
 
@@ -97,13 +100,14 @@ public class userSongsRankWindow {
                 })
         //dataStreamWithWaterMark.keyBy("userId","songId")
                 //一年的数据
-                .window(TumblingEventTimeWindows.of(Time.days(365)))
+                .countWindow(1000)
+                //.window(TumblingEventTimeWindows.of(Time.days(365)))
                 .reduce(new ReduceFunction<userEverySongsTimeAndTimes>() {
                     @Override
                     public userEverySongsTimeAndTimes reduce(userEverySongsTimeAndTimes e1, userEverySongsTimeAndTimes e2) throws Exception {
-                        e1.setSongsCount(e1.getSongsCount()+1);
-                        e1.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
-                        return e1;                    }
+                        e2.setSongsCount(e1.getSongsCount()+1);
+                        e2.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
+                        return e2;                    }
                 }).print();
         //滑动时间窗口
 //        dataStreamWithWaterMark.keyBy(everySongsTimeAndTimesCount->everySongsTimeAndTimesCount.getSongId()).window(TumblingEventTimeWindows.of(Time.hours(3),Time.minutes(30))).reduce(new ReduceFunction<everySongsTimeAndTimesCount>() {

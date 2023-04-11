@@ -1,106 +1,73 @@
 package edu.sicau.window;
 
+import edu.sicau.Sink.SinkToMysql;
 import edu.sicau.beans.UserBehavior;
 import edu.sicau.beans.songsHotRank;
+import edu.sicau.beans.userEverySongsTimeAndTimes;
 import org.apache.flink.api.common.eventtime.*;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
+import org.apache.flink.api.java.functions.KeySelector;
+import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.streaming.api.datastream.*;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.ProcessFunction;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 
+import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.Date;
 
 public class songsHotRankWindow {
 
-    //十二个小时热度统计
-    public static DataStream<songsHotRank> twelveHourTimeWindow(DataStream<UserBehavior> dataStream){
+    public static DataStream<songsHotRank> songsTimeWindow(DataStream<UserBehavior> dataStream,Integer time){
+        //转换为新类
         DataStream<songsHotRank> dataStreamWithWaterMark = dataStream.map(new MapFunction<UserBehavior, songsHotRank>() {
                     @Override
-                    public songsHotRank map(UserBehavior userBehavior) throws Exception {
-                        return new songsHotRank(userBehavior.getSongId(), 1, userBehavior.getPlayStartTime(), userBehavior.getPlayEndTime() - userBehavior.getPlayStartTime(),  userBehavior.getSongName(), userBehavior.getArtistId(), userBehavior.getArtistName());
+                    public songsHotRank map(UserBehavior u1) throws Exception {
+                        return new songsHotRank(u1.getSongId(), 1, u1.getPlayStartTime(), u1.getPlayEndTime() - u1.getPlayStartTime(),  u1.getSongName(), u1.getArtistId(), u1.getArtistName());
                     }
-                })
-                //水位线 乱序流
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofHours(1))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
-                            @Override
-                            public long extractTimestamp(songsHotRank everySongsTimeAndTimesCount, long l) {
-                                return everySongsTimeAndTimesCount.getPlayStartTime()*1000;
-                            }
-                        }));
-        //滚动时间窗口
-        DataStream<songsHotRank> twelveHourTimewindow = dataStreamWithWaterMark.keyBy(songsHotRank -> songsHotRank.getSongId())
-                .window(TumblingEventTimeWindows.of(Time.hours(12)))
-                .reduce(new ReduceFunction<songsHotRank>() {
-                    @Override
-                    public songsHotRank reduce(songsHotRank e1, songsHotRank e2) throws Exception {
-                        e1.setSongsCount(e1.getSongsCount()+1);
-                        e1.setTimeCount(e1.getTimeCount()+e2.getTimeCount());
-                        return e1;                    }
                 });
-        return twelveHourTimewindow;
-    }
-
-    //三个小时热度统计
-    public static DataStream<songsHotRank> threeHourTimeWindow(DataStream<UserBehavior> dataStream){
-        DataStream<songsHotRank> dataStreamWithWaterMark = dataStream.map(new MapFunction<UserBehavior, songsHotRank>() {
-                    @Override
-                    public songsHotRank map(UserBehavior userBehavior) throws Exception {
-                        return new songsHotRank(userBehavior.getSongId(), 1, userBehavior.getPlayStartTime(), userBehavior.getPlayEndTime() - userBehavior.getPlayStartTime(),  userBehavior.getSongName(), userBehavior.getArtistId(), userBehavior.getArtistName());
-                    }
-                })
                 //水位线 乱序流
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofHours(1))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
-                            @Override
-                            public long extractTimestamp(songsHotRank everySongsTimeAndTimesCount, long l) {
-                                return everySongsTimeAndTimesCount.getPlayStartTime()*1000;
-                            }
-                        }));
+//                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofHours(2))
+//                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
+//                            @Override
+//                            public long extractTimestamp(songsHotRank s1, long l) {
+//
+//                                return ((long)s1.getPlayStartTime())*1000;
+//                            }
+//                        }));
+        //dataStreamWithWaterMark.print();
         //滚动时间窗口
-        DataStream<songsHotRank> threeHourTimewindow = dataStreamWithWaterMark.keyBy(songsHotRank -> songsHotRank.getSongId())
-                .window(TumblingEventTimeWindows.of(Time.hours(3)))
+//        DataStream<songsHotRank> songsHotRankWindow = dataStreamWithWaterMark.keyBy((KeySelector<songsHotRank, Integer>) u1 -> u1.getSongId())
+//                //dataStreamWithWaterMark.keyBy("userId","songId")
+//                //指定数据
+//                .window(TumblingEventTimeWindows.of(Time.hours(time)))
+//                .reduce(new ReduceFunction<songsHotRank>() {
+//                    @Override
+//                    public songsHotRank reduce(songsHotRank e1, songsHotRank e2) throws Exception {
+//                        e1.setSongsCount(e1.getSongsCount() + 1);
+//                        e1.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
+//                        return e1;
+//                    }
+//                });
+        DataStream<songsHotRank> songsHotRankWindow = dataStreamWithWaterMark.keyBy((KeySelector<songsHotRank, Integer>) u1 -> u1.getSongId())
+                //dataStreamWithWaterMark.keyBy("userId","songId")
+                //指定数据
                 .reduce(new ReduceFunction<songsHotRank>() {
                     @Override
                     public songsHotRank reduce(songsHotRank e1, songsHotRank e2) throws Exception {
-                        e1.setSongsCount(e1.getSongsCount()+1);
-                        e1.setTimeCount(e1.getTimeCount()+e2.getTimeCount());
+                        e1.setSongsCount(e1.getSongsCount() + 1);
+                        e1.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
                         return e1;
                     }
                 });
-        return threeHourTimewindow;
-    }
-
-    //六小时热度统计
-    public static DataStream<songsHotRank> sixHourTimeWindow(DataStream<UserBehavior> dataStream){
-        DataStream<songsHotRank> dataStreamWithWaterMark = dataStream.map(new MapFunction<UserBehavior, songsHotRank>() {
-                    @Override
-                    public songsHotRank map(UserBehavior userBehavior) throws Exception {
-                        return new songsHotRank(userBehavior.getSongId(), 1, userBehavior.getPlayStartTime(), userBehavior.getPlayEndTime() - userBehavior.getPlayStartTime(),  userBehavior.getSongName(), userBehavior.getArtistId(), userBehavior.getArtistName());
-                    }
-                })
-                //水位线 乱序流
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofHours(1))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
-                            @Override
-                            public long extractTimestamp(songsHotRank everySongsTimeAndTimesCount, long l) {
-                                return everySongsTimeAndTimesCount.getPlayStartTime()*1000;
-                            }
-                        }));
-        //滚动时间窗口
-        DataStream<songsHotRank> sixHourTimewindow = dataStreamWithWaterMark.keyBy(songsHotRank -> songsHotRank.getSongId())
-                .window(TumblingEventTimeWindows.of(Time.hours(6)))
-                .reduce(new ReduceFunction<songsHotRank>() {
-                    @Override
-                    public songsHotRank reduce(songsHotRank e1, songsHotRank e2) throws Exception {
-                        e1.setSongsCount(e1.getSongsCount()+1);
-                        e1.setTimeCount(e1.getTimeCount()+e2.getTimeCount());
-                        return e1;
-                    }
-                });
-        return sixHourTimewindow;
+        return songsHotRankWindow;
     }
 
     public static void main(String[] args) throws Exception {
@@ -125,26 +92,26 @@ public class songsHotRankWindow {
                     public songsHotRank map(UserBehavior userBehavior) throws Exception {
                         return new songsHotRank(userBehavior.getSongId(), 1, userBehavior.getPlayStartTime(), userBehavior.getPlayEndTime() - userBehavior.getPlayStartTime(),  userBehavior.getSongName(), userBehavior.getArtistId(), userBehavior.getArtistName());
                     }
-                })
+                });
                 //水位线 乱序流
-                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofMinutes(1))
-                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
-                            @Override
-                            public long extractTimestamp(songsHotRank everySongsTimeAndTimesCount, long l) {
-                                return everySongsTimeAndTimesCount.getPlayStartTime()*1000;
-                        }
-                }));
+//                .assignTimestampsAndWatermarks(WatermarkStrategy.<songsHotRank>forBoundedOutOfOrderness(Duration.ofMinutes(1))
+//                        .withTimestampAssigner(new SerializableTimestampAssigner<songsHotRank>() {
+//                            @Override
+//                            public long extractTimestamp(songsHotRank everySongsTimeAndTimesCount, long l) {
+//                                return everySongsTimeAndTimesCount.getPlayStartTime()*1000;
+//                        }
+//                }));
         //滚动时间窗口
-        dataStreamWithWaterMark.keyBy(songsHotRank -> songsHotRank.getSongId())
+        SingleOutputStreamOperator<songsHotRank> reduce = dataStreamWithWaterMark.keyBy(songsHotRank -> songsHotRank.getSongId())
                 .window(TumblingEventTimeWindows.of(Time.hours(1)))
                 .reduce(new ReduceFunction<songsHotRank>() {
                     @Override
                     public songsHotRank reduce(songsHotRank e1, songsHotRank e2) throws Exception {
-                        e1.setSongsCount(e1.getSongsCount()+1);
-                        e1.setTimeCount(e1.getTimeCount()+e2.getTimeCount());
-                        return e1;
+                        e2.setSongsCount(e1.getSongsCount() + 1);
+                        e2.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
+                        return e2;
                     }
-                }).print();
+                });
         //滑动时间窗口
 //        dataStreamWithWaterMark.keyBy(everySongsTimeAndTimesCount->everySongsTimeAndTimesCount.getSongId()).window(TumblingEventTimeWindows.of(Time.hours(3),Time.minutes(30))).reduce(new ReduceFunction<everySongsTimeAndTimesCount>() {
 //            @Override
@@ -169,5 +136,13 @@ public class songsHotRankWindow {
          * 窗口函数（窗口算子）
          */
         env.execute();
+    }
+    //时间戳转日期函数x
+    public static String stampToDate(long value) {
+        String res;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date(value);
+        res = simpleDateFormat.format(date);
+        return res;
     }
 }

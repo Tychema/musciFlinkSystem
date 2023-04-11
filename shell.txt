@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# 设置项目路径
+project_path=/program/musciFlinkSystem
+
+# 启动KafkaProducer
+cd $project_path/kafkaSendMessage/src/main/java/edu/sicau/kafkaProducer
+nohup mvn exec:java > kafkaProducer.log 2>&1 &
+
+# 启动Flink流处理
+nohup /opt/module/flink-1.16.1/bin/flink run -c edu.sicau.kafkaComsumer.kafkaDataConsumer 
+    musicFlinkSystem-1.0-SNAPSHOT.jar 
+    > /logs/flink.log 2>&1 &
+
+# 启动Spring Boot接口
+cd $project_path/musicRestAPI
+nohup mvn spring-boot:run \
+    -Dspring-boot.run.arguments="--kafka.server=localhost:9092" \
+    > api.log 2>&1 &
+
+nohup java -jar musicFlinkSystem-1.0-SNAPSHOT.jar >/logs/restApi.log 2>&1 &
+# 等待10秒钟，让所有进程都启动完成
+sleep 10s
+
+echo "启动成功"

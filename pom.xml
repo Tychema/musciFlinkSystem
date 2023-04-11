@@ -11,7 +11,7 @@
     <modules>
         <module>ListenTimeAnalysis</module>
         <module>kafkaSendMessage</module>
-        <module>MysicHdfsAPI</module>
+        <module>MusicHdfsAPI</module>
     </modules>
 
     <properties>

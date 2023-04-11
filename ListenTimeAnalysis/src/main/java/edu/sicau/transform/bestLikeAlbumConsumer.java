@@ -50,12 +50,11 @@ public class bestLikeAlbumConsumer {
 //        return ;
 //    }
 
-    public static DataStream<bestLikeAlbum> bestLikeAlbumStreamOperator(DataStreamSource<String> inputStream){
-        DataStream<bestLikeAlbum> dataStream=inputStream.map(new MapFunction<String, bestLikeAlbum>() {
+    public static DataStream<bestLikeAlbum> bestLikeAlbumStreamOperator(DataStream<UserBehavior> inputStream){
+        DataStream<bestLikeAlbum> dataStream=inputStream.map(new MapFunction<UserBehavior, bestLikeAlbum>() {
             @Override
-            public bestLikeAlbum map(String s) throws Exception {
-                String[] s1 = s.split(" ");
-                return new bestLikeAlbum(Integer.valueOf(s1[0]),Integer.valueOf(s1[8]),s1[9],1);
+            public bestLikeAlbum map(UserBehavior u1) throws Exception {
+                return new bestLikeAlbum(u1.getUserId(),u1.getAlbumId(),u1.getAlbumName(),1);
                 }
         });
         DataStream<bestLikeAlbum> outputStream =dataStream.keyBy(new KeySelector<bestLikeAlbum, Tuple2<Integer,Integer>>() {

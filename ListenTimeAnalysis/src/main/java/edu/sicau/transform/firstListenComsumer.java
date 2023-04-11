@@ -14,17 +14,10 @@ public class firstListenComsumer {
     public firstListenComsumer() {
     }
 
-    public DataStream<UserBehavior> firstListenCount(DataStreamSource<String> inputStream){
-        //包装类
-        DataStream<UserBehavior> dataStream=inputStream.map(new MapFunction<String, UserBehavior>() {
-            @Override
-            public UserBehavior map(String s) throws Exception {
-                String[] s1 = s.split(" ");
-                return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
-            }
-        });
+    public DataStream<UserBehavior> firstListenCount(DataStream<UserBehavior> inputStream){
+
         //分组 可以多个字段做一个组合 所以返回为Tuple元组类型
-        KeyedStream<UserBehavior, Tuple> keyedStream = dataStream.keyBy("userId");
+        KeyedStream<UserBehavior, Tuple> keyedStream = inputStream.keyBy("userId");
         //聚合
         DataStream<UserBehavior> firstListen = keyedStream.reduce(new ReduceFunction<UserBehavior>() {
             @Override

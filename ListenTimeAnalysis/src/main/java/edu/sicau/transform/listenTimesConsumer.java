@@ -1,5 +1,6 @@
 package edu.sicau.transform;
 
+import edu.sicau.beans.UserBehavior;
 import edu.sicau.beans.timeCount;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
@@ -14,12 +15,11 @@ public class listenTimesConsumer {
     public listenTimesConsumer() {
     }
 
-    public DataStream<timeCount> listenTimeCount(DataStreamSource<String> inputStream){
-        DataStream<timeCount> dataStream=inputStream.map(new MapFunction<String, timeCount>() {
+    public DataStream<timeCount> listenTimeCount(DataStream<UserBehavior> inputStream){
+        DataStream<timeCount> dataStream=inputStream.map(new MapFunction<UserBehavior, timeCount>() {
             @Override
-            public timeCount map(String s) throws Exception {
-                String[] s1 = s.split(" ");
-                return new timeCount(Integer.valueOf(s1[0]),1);
+            public timeCount map(UserBehavior s) throws Exception {
+                return new timeCount(s.getUserId(),1);
                 //return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
             }
         });

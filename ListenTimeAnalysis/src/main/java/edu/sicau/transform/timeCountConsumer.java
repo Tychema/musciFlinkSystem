@@ -1,5 +1,6 @@
 package edu.sicau.transform;
 
+import edu.sicau.beans.UserBehavior;
 import edu.sicau.beans.timeCount;
 import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.common.functions.ReduceFunction;
@@ -13,12 +14,11 @@ import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 public class timeCountConsumer {
     public timeCountConsumer() {
     }
-    public DataStream<timeCount> timeCount(DataStream inputStream) throws Exception {
-        DataStream<timeCount> dataStream=inputStream.map(new MapFunction<String, timeCount>() {
+    public DataStream<timeCount> timeCount(DataStream<UserBehavior> inputStream) throws Exception {
+        DataStream<timeCount> dataStream=inputStream.map(new MapFunction<UserBehavior, timeCount>() {
             @Override
-            public timeCount map(String s) throws Exception {
-                String[] s1 = s.split(" ");
-                return new timeCount(Integer.valueOf(s1[0]),Integer.valueOf(s1[2])-Integer.valueOf(s1[1]));
+            public timeCount map(UserBehavior s) throws Exception {
+                return new timeCount(s.getUserId(),s.getPlayEndTime()-s.getPlayStartTime());
                 //return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
             }
         });
@@ -41,7 +41,7 @@ public class timeCountConsumer {
                 return new timeCount(u1.getUserId(), u1.getCount()+u2.getCount());
             }
         });
-        dt.print();
+        //dt.print();
         return dt;
 //        DataStream<UserBehavior> sum = keyedStream.sum("playStartTime");
 //        sum.print();
