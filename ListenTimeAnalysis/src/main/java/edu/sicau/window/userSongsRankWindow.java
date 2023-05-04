@@ -14,11 +14,15 @@ import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.functions.windowing.ProcessWindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
 import org.apache.flink.streaming.api.windowing.time.Time;
+import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
+import org.apache.flink.util.Collector;
 
 import java.time.Duration;
+import java.util.Random;
 
 public class userSongsRankWindow {
     public static DataStream<userEverySongsTimeAndTimes> userWindow(DataStream<UserBehavior> dataStream){
@@ -39,7 +43,17 @@ public class userSongsRankWindow {
 //                        }));
         //dataStreamWithWaterMark.print();
         //滚动时间窗口
-        DataStream<userEverySongsTimeAndTimes> userWindow = dataStreamWithWaterMark.keyBy(new KeySelector<userEverySongsTimeAndTimes, Tuple2<Integer,Integer>>() {
+        DataStream<userEverySongsTimeAndTimes> userWindow = dataStreamWithWaterMark
+                //shuffle
+                .map(new MapFunction<userEverySongsTimeAndTimes, userEverySongsTimeAndTimes>() {
+                    Random random=new Random();
+                    @Override
+                    public userEverySongsTimeAndTimes map(userEverySongsTimeAndTimes u1) throws Exception {
+                        u1.setUserId(u1.getUserId()*100+random.nextInt(99));
+                        return u1;
+                    }
+                })
+                .keyBy(new KeySelector<userEverySongsTimeAndTimes, Tuple2<Integer,Integer>>() {
                     @Override
                     public Tuple2<Integer,Integer> getKey(userEverySongsTimeAndTimes u1) throws Exception {
                         return new Tuple2<Integer,Integer>(u1.getUserId(),u1.getSongId());
@@ -47,7 +61,7 @@ public class userSongsRankWindow {
                 })
                 //dataStreamWithWaterMark.keyBy("userId","songId")
                 //一年的数据
-                .window(TumblingEventTimeWindows.of(Time.days(2)))
+                .window(TumblingEventTimeWindows.of(Time.days(1)))
                 .reduce(new ReduceFunction<userEverySongsTimeAndTimes>() {
                     @Override
                     public userEverySongsTimeAndTimes reduce(userEverySongsTimeAndTimes e1, userEverySongsTimeAndTimes e2) throws Exception {
@@ -55,7 +69,29 @@ public class userSongsRankWindow {
                         e1.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
                         return e1;
                     }
-                });
+                }, new ProcessWindowFunction<userEverySongsTimeAndTimes, userEverySongsTimeAndTimes, Tuple2<Integer, Integer>, TimeWindow>() {
+                    @Override
+                    public void process(Tuple2<Integer, Integer> integerIntegerTuple2, ProcessWindowFunction<userEverySongsTimeAndTimes, userEverySongsTimeAndTimes, Tuple2<Integer, Integer>, TimeWindow>.Context context, Iterable<userEverySongsTimeAndTimes> elements, Collector<userEverySongsTimeAndTimes> out) throws Exception {
+                        userEverySongsTimeAndTimes next = elements.iterator().next();
+                        next.setUserId(next.getUserId()/10);
+                        out.collect(next);
+                    }
+                })
+                .keyBy(new KeySelector<userEverySongsTimeAndTimes, Tuple2<Integer,Integer>>() {
+                    @Override
+                        public Tuple2<Integer,Integer> getKey(userEverySongsTimeAndTimes u1) throws Exception {
+                            return new Tuple2<Integer,Integer>(u1.getUserId(),u1.getSongId());
+                        }
+                    }
+                ).reduce(new ReduceFunction<userEverySongsTimeAndTimes>() {
+                    @Override
+                    public userEverySongsTimeAndTimes reduce(userEverySongsTimeAndTimes e1, userEverySongsTimeAndTimes e2) throws Exception {
+                        e1.setSongsCount(e1.getSongsCount() + 1);
+                        e1.setTimeCount(e1.getTimeCount() + e2.getTimeCount());
+                        return e1;
+                        }
+                    }
+                );
         //userWindow.print();
         return userWindow;
     }

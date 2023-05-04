@@ -28,9 +28,10 @@ import java.util.Properties;
 
 public class kafkaDataConsumer {
     public static void main(String[] args) throws Exception {
+        System.out.println("开始消费"+System.currentTimeMillis());
         //创建环境
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        env.setParallelism(10);
+        env.setParallelism(5);
 
         //Kafka读入数据
         Properties properties = new Properties();
@@ -56,14 +57,10 @@ public class kafkaDataConsumer {
                     }
                 })
         );
-//        DataStream<UserBehavior> dataStream=inputStream.map(new MapFunction<String, UserBehavior>() {
-//            @Override
-//            public UserBehavior map(String s) throws Exception {
-//                String[] s1 = s.split(" ");
-//                //return new bestLikeAlbum(Integer.valueOf(s1[0]),Integer.valueOf(s1[8]),s1[9],1);
-//                return new UserBehavior(Integer.valueOf(s1[0]),Integer.valueOf(s1[1]),Integer.valueOf(s1[2]),Integer.valueOf(s1[3]),Integer.valueOf(s1[4]),s1[5],Integer.valueOf(s1[6]),s1[7],Integer.valueOf(s1[8]),s1[9]);
-//            }
-//        });
+        //写入
+        SinkToMysql sinkToMysql = new SinkToMysql();
+        //
+
         //用户窗口
         userSongsRankWindow usersongsrankwindow = new userSongsRankWindow();
         //最喜欢的专辑
@@ -75,31 +72,20 @@ public class kafkaDataConsumer {
         //时间统计
         timeCountConsumer timeCountConsumer = new timeCountConsumer();
         //热度窗口
-        songsHotRankWindow songsHotRankWindow = new songsHotRankWindow();
+        songsHotRankWindow songsHotRank = new songsHotRankWindow();
         //歌手窗口
         artistHotRankWindow artistHotRankWindow = new artistHotRankWindow();
         //处理
-        //DataStream<userEverySongsTimeAndTimes> userEverySongsTimeAndTimesDataStream = usersongsrankwindow.userWindow(dataStream);
-        //DataStream<bestLikeAlbum> albumStream=bestLikeAlbum.bestLikeAlbumStreamOperator(inputStream);
-        //DataStream<UserBehavior> firstListenCountStream=firstListenComsumer.firstListenCount(inputStream);
-        //DataStream<timeCount> listenTimeCountStream=listenTimesConsumer.listenTimeCount(inputStream);
-        //DataStream<timeCount> timesCountStream=timeCountConsumer.timeCount(inputStream);
-        //DataStream<songsHotRank> threesongsHotRankDataStream=songsHotRankWindow.songsTimeWindow(dataStream,3);
-        //DataStream<songsHotRank> twelvesongsHotRankDataStream=songsHotRankWindow.songsTimeWindow(dataStream,12);
-        //DataStream<songsHotRank> daysongsHotRankDataStream=songsHotRankWindow.songsTimeWindow(dataStream,24);
-        //DataStream<songsHotRank> weeksongsHotRankDataStream=songsHotRankWindow.songsTimeWindow(dataStream,24*7);
-        //DataStream<songsHotRank> monthsongsHotRankDataStream=songsHotRankWindow.songsTimeWindow(dataStream,24*30);
-        //DataStream<songsHotRank> songsHotRankDataStream = artistHotRankWindow.artistTimeWindow(dataStream, 24);
-        //写入
-        SinkToMysql sinkToMysql = new SinkToMysql();
-        //sinkToMysql.userEverySongsTimeAndTimesToMysql(userSongsRankWindow.userWindow(dataStream));
+        sinkToMysql.userEverySongsTimeAndTimesToMysql(userSongsRankWindow.userWindow(dataStream));
+        sinkToMysql.sinkSongsHotRankToMysql(artistHotRankWindow.artistTimeWindow(dataStream),"artisthotrankwindow_day");
+        sinkToMysql.sinkSongsHotRankToMysql(songsHotRank.songsTimeWindow(dataStream,24),"songshotrank_day");
+        //sinkToMysql.sinkUserBehaviorToMysql(dataStream);
         //sinkToMysql.sinkbestLikeAlbumToMysql(bestLikeAlbum.bestLikeAlbumStreamOperator(dataStream));
         //sinkToMysql.sinkFirstListenToMysql(firstListenComsumer.firstListenCount(dataStream));
         //sinkToMysql.sinkListenTimeCountToMysql(listenTimesConsumer.listenTimeCount(dataStream));
-        sinkToMysql.sinkTimeCountToMysql(timeCountConsumer.timeCount(dataStream));
-        //sinkToMysql.sinkSongsHotRankToMysql(songsHotRankDataStream,"songshotrankwindow_day");
         //sinkToMysql.sinkTimeCountToMysql(timeCountConsumer.timeCount(dataStream));
-        //sinkToMysql.sinkSongsHotRankToMysql(artistHotRankWindow.artistTimeWindow(dataStream),"artisthotrankwindow_day");
+        //sinkToMysql.sinkTimeCountToMysql(timeCountConsumer.timeCount(dataStream));
+
 
 
         //执行

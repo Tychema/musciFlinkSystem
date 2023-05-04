@@ -27,7 +27,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(9,UserBehavior.getAlbumId());
                     preparedStatement.setString(10,UserBehavior.getAlbumName());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicFlinkSystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
@@ -39,7 +39,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(1,timecount.getUserId());
                     preparedStatement.setInt(2,timecount.getCount());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicFlinkSystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
@@ -51,7 +51,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(1,timecount.getUserId());
                     preparedStatement.setInt(2,timecount.getCount());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicFlinkSystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
@@ -71,7 +71,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(9,UserBehavior.getAlbumId());
                     preparedStatement.setString(10,UserBehavior.getAlbumName());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicFlinkSystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
@@ -88,7 +88,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(6,e1.getArtistId());
                     preparedStatement.setString(7,e1.getArtistName());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
     //每个用户每一首歌听了几次听了多久
@@ -105,7 +105,7 @@ public class SinkToMysql {
                     preparedStatement.setInt(8,e1.getAlbumId());
                     preparedStatement.setString(9,e1.getAlbumName());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
@@ -118,7 +118,7 @@ public class SinkToMysql {
                     preparedStatement.setString(3,bestLikeAlbum.getAlbumName());
                     preparedStatement.setInt(4,bestLikeAlbum.getCount());
                 }),
-                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
+                new JdbcConnectionOptions.JdbcConnectionOptionsBuilder().withDriverName("com.mysql.jdbc.Driver").withUrl("jdbc:mysql://127.0.0.1:3306/musicflinksystem_test?characterEncoding=gbk&useSSL=false").withUsername("root").withPassword("1234").build()
         ));
     }
 
